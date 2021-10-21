@@ -5,52 +5,21 @@ on:
     # runs tests for commits pushed to master
     branches:
       - main
-    # do not run tests if file README.md changes
-    paths-ignore:
-      - 'README.md'
     # run tests for GitHub Pull requests. Test result is visible in the Pull Request page.
-  pull_request:
-    paths-ignore:
-      - 'README.md'
 jobs:
-    run_tests:
+    test:
         runs-on: ubuntu-latest
         steps:
-
         - uses: actions/checkout@v2
-
-        - name: Create folder for reports
-          run: mkdir Reports
-
-        - name: Run Robot Framework Tests
-
-          run: |
-            docker run \
-                -v $PWD/reports:/opt/robotframework/reports:Z \
-                -v $PWD/tests:/opt/robotframework/tests:Z \
-                -e BROWSER=chrome \
-                ppodgorsek/robot-framework:latest
-
-        - name: Upload reports
+        - name: Execute tests
+          uses: joonvena/robotframework-docker-action@v0.1
+          env:
+            BROWSER: chrome
+            ROBOT_TESTS_DIR: ${{ github.workspace }}/tests
+            ROBOT_REPORTS_DIR: ${{ github.workspace }}/reports
+        - name: Upload test results
           uses: actions/upload-artifact@v1
           if: always()
           with:
             name: reports
-            # set path to Robot Framework results reports. Exclude dummy file that is needed because of ppodgorsek image priviledges.
             path: ${{ github.workspace }}/reports
-        # repository name is needed for posting test report in a next step
-        - name: Get Repository Name
-          run: |
-            export REPO="$(echo "${{ github.repository }}" | awk -F / '{print $2}' | sed -e "s/:refs//")"
-            echo "::set-env name=REPOSITORY_NAME::$REPO"
-        # when test are run for a commit, post results as a comment
-        # note: comment is not posted for tests triggered for pull requests, only for a main branch (main)
-        - name: Send test report as comment to commit
-          uses: joonvena/robotframework-reporter-action@v0.1
-          if: ${{ github.event_name == 'push' }}
-          env:
-            GH_ACCESS_TOKEN: ${{ github.TOKEN }}
-            REPO_OWNER: ${{ github.REPOSITORY_OwNER }}
-            COMMIT_SHA: ${{ github.SHA }}
-            REPOSITORY: ${{ env.REPOSITORY_NAME }}
-            REPORT_PATH: ${{ github.workspace }}/reports
