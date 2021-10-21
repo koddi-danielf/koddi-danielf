@@ -30,8 +30,8 @@ jobs:
           # configure -e ROBOT_OPTIONS according to yout tests, or remove it if no special configuration is needed
           run: |
             docker run \
-                -v :/opt/robotframework/reports:Z \
-                -v :/opt/robotframework/tests:Z \
+                -v :/koddi-danielf/results:Z \
+                -v :/koddi-danielf/tests:Z \
                 ppodgorsek/robot-framework:latest
         # upload test reports as a zip file
         - name: Upload reports
