@@ -23,12 +23,12 @@ jobs:
           run: mkdir Reports
 
         - name: Run Robot Framework Tests
-        
+
           run: |
             docker run \
-                -v ${PWD}/reports:/opt/robotframework/reports:Z \
-                -v ${PWD}/tests:/opt/robotframework/tests:Z \
-                --user $(id -u):$(id -g) \
+                -v `pwd`/reports:/opt/robotframework/reports:Z \
+                -v `pwd`/tests:/opt/robotframework/tests:Z \
+                -e BROWSER=chrome \
                 ppodgorsek/robot-framework:latest
 
         - name: Upload reports
